@@ -38,6 +38,7 @@ const allowedOrigins = (process.env.CLIENT_ORIGIN || "")
 const isAllowedOrigin = (origin) => {
   if (!origin) return true; // Postman / server-to-server calls
   if (allowedOrigins.length === 0) return true; // nothing set -> allow all
+  if (allowedOrigins.includes("*")) return true; // CLIENT_ORIGIN=* -> allow all
   if (allowedOrigins.includes(origin)) return true;
 
   return allowedOrigins.some((allowed) => {
