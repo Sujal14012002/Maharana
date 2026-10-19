@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { getAdminEnv } = require("../config/adminEnv");
 
 // Blocks the request unless a valid admin JWT is sent in
 // the "Authorization: Bearer <token>" header.
@@ -11,7 +12,7 @@ const requireAdmin = (req, res, next) => {
   }
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, getAdminEnv().secret);
     if (payload.role !== "admin") throw new Error("Not admin");
     req.admin = payload;
     next();

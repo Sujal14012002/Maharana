@@ -2,6 +2,7 @@ const express = require("express");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { requireAdmin } = require("../middleware/auth");
+const { getAdminEnv } = require("../config/adminEnv");
 
 const router = express.Router();
 
@@ -31,11 +32,12 @@ const safeEqual = (a, b) => {
 
 // POST /api/auth/login
 router.post("/login", (req, res) => {
-  const { ADMIN_USERNAME, ADMIN_PASSWORD, JWT_SECRET } = process.env;
+  const { username: ADMIN_USERNAME, password: ADMIN_PASSWORD, secret: JWT_SECRET } = getAdminEnv();
   if (!ADMIN_USERNAME || !ADMIN_PASSWORD || !JWT_SECRET) {
+    console.error("[Auth] Missing ADMIN_USERNAME / ADMIN_PASSWORD / JWT_SECRET (or ADMIN_TOKEN_SECRET)");
     return res.status(500).json({
       success: false,
-      message: "Server is missing ADMIN_USERNAME / ADMIN_PASSWORD / JWT_SECRET",
+      message: "Server is missing ADMIN_USERNAME / ADMIN_PASSWORD / JWT_SECRET (or ADMIN_TOKEN_SECRET).",
     });
   }
 
@@ -44,7 +46,9 @@ router.post("/login", (req, res) => {
     return res.status(429).json({ success: false, message: "Too many attempts. Try again in 15 minutes." });
   }
 
-  const { username, password } = req.body || {};
+  const body = req.body || {};
+  const username = String(body.username || "").trim();
+  const password = String(body.password || "").trim();
   const ok =
     username && password && safeEqual(username, ADMIN_USERNAME) && safeEqual(password, ADMIN_PASSWORD);
 
@@ -53,6 +57,7 @@ router.post("/login", (req, res) => {
     return res.status(401).json({ success: false, message: "Invalid username or password" });
   }
 
+  attempts.delete(ip);
   const token = jwt.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "7d" });
   res.json({ success: true, token });
 });
