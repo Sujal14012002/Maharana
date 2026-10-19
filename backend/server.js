@@ -2,7 +2,6 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 
 const connectDB = require("./config/db");
 
@@ -29,15 +28,28 @@ connectDB();
 // Needed on Render/Railway/etc. so req.ip is the real client IP
 app.set("trust proxy", 1);
 
-// CLIENT_ORIGIN can be one URL or several separated by commas
+// CLIENT_ORIGIN can be one URL or several separated by commas.
+// Wildcards are allowed, e.g. https://*.vercel.app
 const allowedOrigins = (process.env.CLIENT_ORIGIN || "")
   .split(",")
   .map((o) => o.trim().replace(/\/$/, ""))
   .filter(Boolean);
 
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true; // Postman / server-to-server calls
+  if (allowedOrigins.length === 0) return true; // nothing set -> allow all
+  if (allowedOrigins.includes(origin)) return true;
+
+  return allowedOrigins.some((allowed) => {
+    if (!allowed.includes("*")) return false;
+    const pattern = allowed.replace(/[.]/g, "\\.").replace("*", "[a-z0-9-]+");
+    return new RegExp(`^${pattern}$`).test(origin);
+  });
+};
+
 app.use(
   cors({
-    origin: allowedOrigins.length ? allowedOrigins : "*",
+    origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
   })
 );
 
@@ -95,7 +107,9 @@ app.use((err, req, res, next) => {
   // Upload problems (file too big / wrong format) are the user's fault -> 400
   if (err.name === "MulterError" || /Unsupported file format|Only JPG/.test(err.message)) {
     const message =
-      err.code === "LIMIT_FILE_SIZE" ? "File is too large (photos/frames max 10MB, videos max 100MB)" : err.message;
+      err.code === "LIMIT_FILE_SIZE"
+        ? "File is too large (photos/frames max 10MB, videos max 100MB)"
+        : err.message;
     return res.status(400).json({ success: false, message });
   }
 
@@ -112,7 +126,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(
-    `[Server] Maharana Pratap Studio API running on port ${PORT}`
-  );
+  console.log(`[Server] Maharana Pratap Studio API running on port ${PORT}`);
 });
