@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #121014;
+  overflow-x: hidden;
+}
+
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
+::selection {
+  background-color: #C9A227;
+  color: #121014;
+}
+
+/* thin gold scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1b1820;
+}
+::-webkit-scrollbar-thumb {
+  background: #7a1f2b;
+  border-radius: 4px;
+}
+
+@layer components {
+  .section-heading {
+    @apply font-display text-4xl md:text-5xl text-ivory tracking-wide;
+  }
+
+  .section-wrapper {
+    @apply max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-16 md:py-24;
+  }
+
+  /* Inner pages: clears the fixed navbar (h-20) with breathing room */
+  .page-wrapper {
+    @apply max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 pt-28 md:pt-36 pb-16 md:pb-24;
+  }
+
+  .gold-line {
+    @apply w-16 h-[2px] bg-gold;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-3 bg-gold text-charcoal font-semibold tracking-wide rounded-sm hover:bg-gold-light transition-colors duration-300;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-3 border border-gold text-gold font-semibold tracking-wide rounded-sm hover:bg-gold hover:text-charcoal transition-colors duration-300;
+  }
+
+  .card {
+    @apply bg-charcoal-light border border-white/5 rounded-md overflow-hidden;
+  }
+
+  .input-field {
+    @apply w-full bg-charcoal-lighter border border-white/10 rounded-sm px-4 py-3 text-ivory placeholder:text-ivory/40 focus:outline-none focus:border-gold transition-colors;
+  }
+}
+
+/* fade-in-up utility used sparingly for hero entrance only */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-hero-in {
+  animation: fadeInUp 0.9s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-in {
+    animation: none;
+  }
+}
